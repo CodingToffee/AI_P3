@@ -11,12 +11,15 @@ def pl_resolve(clause1, clause2):
         list: Resolvents
     """
     resolvents = []
-    clause1_literals = get_literals(clause1)
-    clause2_literals = get_literals(clause2)
-    for literal1 in clause1_literals:
-        for literal2 in clause2_literals:
-            if literal1 == f"¬{literal2}" or literal2 == f"¬{literal1}":
-                resolvents.append(clause1 + clause2)
+    for literal1 in clause1:
+        for literal2 in clause2:
+            if literal1 == Not(literal2) or literal2 == Not(literal1):
+                # remove the literals from the clauses
+                clause1_copy = set(clause1)
+                clause2_copy = set(clause2)
+                clause1_copy.remove(literal1)
+                clause2_copy.remove(literal2)
+                resolvents.append(frozenset(clause1_copy.union(clause2_copy)))
     return resolvents
 
 
@@ -29,7 +32,7 @@ def get_clauses(cnf):
 
 def get_literals(clause):
     if isinstance(clause, Or):
-        return list(clause.args)
+        return clause.args
     else:
         return [clause]
 
@@ -42,35 +45,37 @@ class KnowledgeBase:
         self.clauses = []  # Knowledge base
         self.reward = 0
 
-    def tell(self, observation: dict, reward: float):
+    def tell(self, observation, reward: float):
         x = observation['x']
         y = observation['y']
 
         # Add visited field to knowledge base
-        self.clauses.append(symbols(f"V{x}{y}"))
+
+        #self.clauses.append(symbols(f"V{x}{y}"))
         # Add if glitter is present
         if observation['glitter']:
             self.clauses.append(symbols(f"G{x}{y}"))
 
         eval = []
         if observation['breeze']:
-            eval.append('B')
+            eval.append(('B', 'P'))
         if observation['stench']:
-            eval.append('S')
+            eval.append(('S', 'W'))
 
-        for e in eval:
+        for e, f in eval:
             alpha = symbols(f"{e}{x}{y}")
             beta = []
             if x - 1 >= 0:
-                beta.append(symbols(f"{e}{x - 1}{y}"))
+                beta.append(symbols(f"{f}{x - 1}{y}"))
             if x + 1 < 4:
-                beta.append(symbols(f"{e}{x + 1}{y}"))
+                beta.append(symbols(f"{f}{x + 1}{y}"))
             if y - 1 >= 0:
-                beta.append(symbols(f"{e}{x}{y - 1}"))
+                beta.append(symbols(f"{f}{x}{y - 1}"))
             if y + 1 < 4:
-                beta.append(symbols(f"{e}{x}{y + 1}"))
+                beta.append(symbols(f"{f}{x}{y + 1}"))
             beta = And(*beta)
             expression = Equivalent(alpha, beta)
+            print("Expression:", expression)
             expression_cnf = to_cnf(expression)
             self.clauses = self.clauses + get_clauses(expression_cnf)
 
@@ -92,15 +97,24 @@ class KnowledgeBase:
         Returns:
             bool: True if the proposition is true, False otherwise
         """
-        clauses = self.clauses + [Not(symbols(alpha))]
-        new = []
+        clauses = self.clauses + [Not(alpha)]
+        clauses = [set(get_literals(c)) for c in clauses]
+        print("Clauses:", clauses)
+        new = set()
         while True:
+
             for i in range(len(clauses)):
                 for j in range(i + 1, len(clauses)):
                     resolvents = pl_resolve(clauses[i], clauses[j])
-                    if [] in resolvents:
+                    if frozenset() in resolvents:
                         return True
-                    new += resolvents
-            if set(new).issubset(set(clauses)):
+                    new.update(resolvents)
+                    #print("New:", new)
+            # convert clauses to list of frozensets to be able to compare them
+            clauses = [frozenset(c) for c in clauses]
+            if new.issubset(set(clauses)):
                 return False
-            clauses += new
+            clauses += list(new)
+            # convert to list of sets, to be able to resolve them again
+            clauses = [set(c) for c in clauses]
+            print("Clauses:", clauses)

@@ -1,6 +1,12 @@
 import gym
 import fh_ac_ai_gym
 from knowledge_base import KnowledgeBase
+from sympy import symbols
+
+def test_knowledge_base(kb):
+    A = symbols('A')
+    B = symbols('B')
+    C = symbols('C')
 
 
 def get_direction(observation):
@@ -122,6 +128,9 @@ def get_action(kb: KnowledgeBase, x, y, direction):
     print("Current position:", x, y)
     safe_x, safe_y = get_safe_field(kb, x, y)
     print("Safe field:", safe_x, safe_y)
+    print("Knowledge: ", kb.clauses)
+    if safe_x is not None:
+        print("Safe Field Visited: ", kb.ask(f"V{safe_x}{safe_y}"))
     # If there is glitter, pick up the gold
     if kb.ask("G{x}{y}"):
         return "5"
@@ -130,7 +139,9 @@ def get_action(kb: KnowledgeBase, x, y, direction):
         KnowledgeBase.hasArrow = False
         return "4"
     # If the safe field is in front of the player, go forward
-    return get_turn_direction(direction, x, y, safe_x, safe_y)
+    turn_direction = get_turn_direction(direction, x, y, safe_x, safe_y)
+    print("Turn direction:", turn_direction)
+    return turn_direction
 
 
 wumpus_env = gym.make('Wumpus-v0')
@@ -139,24 +150,27 @@ knowledge_base = KnowledgeBase()
 
 # Tell the knowledge base about the initial observation
 knowledge_base.tell(obs, 0)
+print("Current position:", obs['x'], obs['y'])
+print("Knowledge:", knowledge_base.clauses)
+print("W01", knowledge_base.ask("W01"))
 direction = get_direction(obs)
 wumpus_env.render()
 
 last_action = None
 
-done = False
-while not done:
-    # Get the action from the knowledge base
-    action = get_action(knowledge_base, obs['x'], obs['y'], direction)
-    print("Action:", action)
-
-    obs, reward, done, info = wumpus_env.step(action)
-    wumpus_env.render()
-
-    direction = get_direction(obs)
-
-    # Tell the knowledge base about the observation
-    knowledge_base.tell(obs, reward)
-
-
-wumpus_env.close()
+# done = False
+# while not done:
+#     # Get the action from the knowledge base
+#     action = get_action(knowledge_base, obs['x'], obs['y'], direction)
+#     print("Action:", action)
+#
+#     obs, reward, done, info = wumpus_env.step(action)
+#     wumpus_env.render()
+#
+#     direction = get_direction(obs)
+#
+#     # Tell the knowledge base about the observation
+#     knowledge_base.tell(obs, reward)
+#
+#
+# wumpus_env.close()
