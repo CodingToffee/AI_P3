@@ -2,6 +2,7 @@ import gym
 import fh_ac_ai_gym
 from knowledge_base import KnowledgeBase
 
+
 def get_direction(observation):
     """
     Converts the direction to NORTH, SOUTH, EAST, WEST
@@ -19,6 +20,64 @@ def get_direction(observation):
     if observation['direction'].value == 3:
         return 'WEST'
 
+
+def get_turn_direction(current_direction, current_x, current_y, new_x, new_y):
+    """
+    Get the turn direction
+    Args:
+        current_direction (str): Current direction
+        current_x (int): Current x coordinate
+        current_y (int): Current y coordinate
+        new_x (int): New x coordinate
+        new_y (int): New y coordinate
+    Returns:
+        str: Turn direction
+    """
+    if current_x == new_x:
+        if current_y > new_y:
+            if current_direction == 'NORTH' or current_direction == 'EAST':
+                # Turn right
+                return 2
+            elif current_direction == 'WEST':
+                # Turn left
+                return 1
+            elif current_direction == 'SOUTH':
+                # Walk
+                return 0
+        elif current_y < new_y:
+            if current_direction == 'SOUTH' or current_direction == 'WEST':
+                # Turn right
+                return 2
+            elif current_direction == 'EAST':
+                # Turn left
+                return 1
+            elif current_direction == 'NORTH':
+                # Walk
+                return 0
+    if current_y == new_y:
+        if current_x > new_x:
+            if current_direction == 'SOUTH' or current_direction == 'EAST':
+                # Turn right
+                return 2
+            elif current_direction == 'NORTH':
+                # Turn left
+                return 1
+            elif current_direction == 'WEST':
+                # Walk
+                return 0
+        elif current_x < new_x:
+            if current_direction == 'NORTH' or current_direction == 'WEST':
+                # Turn right
+                return 2
+            elif current_direction == 'SOUTH':
+                # Turn left
+                return 1
+            elif current_direction == 'EAST':
+                # Walk
+                return 0
+    return None
+
+
 def get_safe_field(kb: KnowledgeBase, x, y):
     """
     Checks on which field there is no Wumpus nor a Pit
@@ -29,26 +88,49 @@ def get_safe_field(kb: KnowledgeBase, x, y):
     Returns:
         (x, y) (tuple): Coordinates of the safe field
     """
-    if kb.ask("W{x}{y+1}") is False and kb.ask("P{x}{y+1}") is False:
-        return x, y + 1
-    if kb.ask("W{x}{y-1}") is False and kb.ask("P{x}{y-1}") is False:
-        return x, y - 1
-    if kb.ask("W{x+1}{y}") is False and kb.ask("P{x+1}{y}") is False:
-        return x + 1, y
-    if kb.ask("W{x-1}{y}") is False and kb.ask("P{x-1}{y}") is False:
-        return x - 1, y
-    return None
+    if KnowledgeBase.hasArrow:
+        if y + 1 <= 3:
+            if kb.ask("W{x}{y+1}") is False and kb.ask("P{x}{y+1}") is False and kb.ask("V{x}{y+1}") is False:
+                return x, y + 1
+        if y - 1 >= 0:
+            if kb.ask("W{x}{y-1}") is False and kb.ask("P{x}{y-1}") is False and kb.ask("V{x}{y-1}") is False:
+                return x, y - 1
+        if x + 1 <= 3:
+            if kb.ask("W{x+1}{y}") is False and kb.ask("P{x+1}{y}") is False and kb.ask("V{x+1}{y}") is False:
+                return x + 1, y
+        if x - 1 >= 0:
+            if kb.ask("W{x-1}{y}") is False and kb.ask("P{x-1}{y}") is False and kb.ask("V{x-1}{y}") is False:
+                return x - 1, y
+        return None
+    else:
+        if y + 1 <= 3:
+            if (kb.ask("W{x}{y+1}") is False or kb.ask("P{x}{y+1}") is False) and kb.ask("V{x}{y+1}") is False:
+                return x, y + 1
+        if y - 1 >= 0:
+            if (kb.ask("W{x}{y-1}") is False or kb.ask("P{x}{y-1}") is False) and kb.ask("V{x}{y-1}") is False:
+                return x, y - 1
+        if x + 1 <= 3:
+            if (kb.ask("W{x+1}{y}") is False or kb.ask("P{x+1}{y}") is False) and kb.ask("V{x+1}{y}") is False:
+                return x + 1, y
+        if x - 1 >= 0:
+            if (kb.ask("W{x-1}{y}") is False or kb.ask("P{x-1}{y}") is False) and kb.ask("V{x-1}{y}") is False:
+                return x - 1, y
+        return None
+
 
 def get_action(kb: KnowledgeBase, x, y, direction):
+    print("Current position:", x, y)
     safe_x, safe_y = get_safe_field(kb, x, y)
+    print("Safe field:", safe_x, safe_y)
     # If there is glitter, pick up the gold
     if kb.ask("G{x}{y}"):
         return "5"
-    if safe_x is None:
+    if safe_x is None and KnowledgeBase.hasArrow:
+        # Shoot the arrow
+        KnowledgeBase.hasArrow = False
         return "4"
     # If the safe field is in front of the player, go forward
-
-
+    return get_turn_direction(direction, x, y, safe_x, safe_y)
 
 
 wumpus_env = gym.make('Wumpus-v0')
@@ -57,24 +139,24 @@ knowledge_base = KnowledgeBase()
 
 # Tell the knowledge base about the initial observation
 knowledge_base.tell(obs, 0)
-print(obs['direction'].value)
-print(obs)
+direction = get_direction(obs)
 wumpus_env.render()
 
 last_action = None
 
-# done = False
-# while not done:
-#     # Ask the knowledge base about the next action
-#     action = knowledge_base.ask("GoForward")
-#     if action is None:
-#         action = 0
-#
-#     obs, reward, done, info = wumpus_env.step(action)
-#     wumpus_env.render()
-#
-#     # Tell the knowledge base about the observation
-#     knowledge_base.tell(obs, reward)
+done = False
+while not done:
+    # Get the action from the knowledge base
+    action = get_action(knowledge_base, obs['x'], obs['y'], direction)
+    print("Action:", action)
+
+    obs, reward, done, info = wumpus_env.step(action)
+    wumpus_env.render()
+
+    direction = get_direction(obs)
+
+    # Tell the knowledge base about the observation
+    knowledge_base.tell(obs, reward)
 
 
 wumpus_env.close()

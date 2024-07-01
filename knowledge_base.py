@@ -1,25 +1,56 @@
 from sympy import symbols, Not, And, Or, to_cnf, Equivalent
 
 
+def pl_resolve(clause1, clause2):
+    """
+    Resolve two clauses
+    Args:
+        clause1 (str): Clause 1
+        clause2 (str): Clause 2
+    Returns:
+        list: Resolvents
+    """
+    resolvents = []
+    clause1_literals = get_literals(clause1)
+    clause2_literals = get_literals(clause2)
+    for literal1 in clause1_literals:
+        for literal2 in clause2_literals:
+            if literal1 == f"¬{literal2}" or literal2 == f"¬{literal1}":
+                resolvents.append(clause1 + clause2)
+    return resolvents
+
+
+def get_clauses(cnf):
+    if isinstance(cnf, And):
+        return list(cnf.args)
+    else:
+        return [cnf]
+
+
+def get_literals(clause):
+    if isinstance(clause, Or):
+        return list(clause.args)
+    else:
+        return [clause]
+
+
 class KnowledgeBase:
+    hasArrow = True
+    wumpusDead = False
+    hasGold = False
     def __init__(self):
-        self.sentences = []  # Knowledge base
+        self.clauses = []  # Knowledge base
         self.reward = 0
-        self.playerDirection = None
-        self.hasArrow = True
-        self.wumpusDead = False
-        self.hasGold = False
 
-
-    def tell(self, observation:dict, reward:float):
+    def tell(self, observation: dict, reward: float):
         x = observation['x']
         y = observation['y']
 
         # Add visited field to knowledge base
-        self.sentences.append(symbols(f"V{x}{y}"))
+        self.clauses.append(symbols(f"V{x}{y}"))
         # Add if glitter is present
         if observation['glitter']:
-            self.sentences.append(symbols(f"G{x}{y}"))
+            self.clauses.append(symbols(f"G{x}{y}"))
 
         eval = []
         if observation['breeze']:
@@ -41,12 +72,17 @@ class KnowledgeBase:
             beta = And(*beta)
             expression = Equivalent(alpha, beta)
             expression_cnf = to_cnf(expression)
-            self.sentences.append(expression_cnf)
-
+            self.clauses = self.clauses + get_clauses(expression_cnf)
 
     def ask(self, proposition):
-        return self.kb.get(proposition, False)
-
+        """
+        Ask the knowledge base about a proposition
+        Args:
+            proposition (str): Proposition
+        Returns:
+            bool: True if the proposition is true, False otherwise
+        """
+        return self.pl_resolution(proposition)
 
     def pl_resolution(self, alpha):
         """
@@ -56,32 +92,15 @@ class KnowledgeBase:
         Returns:
             bool: True if the proposition is true, False otherwise
         """
-        clauses = self.sentences + [Not(symbols(alpha))]
+        clauses = self.clauses + [Not(symbols(alpha))]
         new = []
         while True:
             for i in range(len(clauses)):
                 for j in range(i + 1, len(clauses)):
-                    resolvents = self.pl_resolve(clauses[i], clauses[j])
+                    resolvents = pl_resolve(clauses[i], clauses[j])
                     if [] in resolvents:
                         return True
                     new += resolvents
             if set(new).issubset(set(clauses)):
                 return False
             clauses += new
-
-
-    def pl_resolve(self, clause1, clause2):
-        """
-        Resolve two clauses
-        Args:
-            clause1 (str): Clause 1
-            clause2 (str): Clause 2
-        Returns:
-            list: Resolvents
-        """
-        resolvents = []
-        for literal1 in clause1:
-            for literal2 in clause2:
-                if literal1 == f"¬{literal2}" or literal2 == f"¬{literal1}":
-                    resolvents.append(clause1 + clause2)
-        return resolvents
