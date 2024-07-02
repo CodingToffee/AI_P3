@@ -3,11 +3,6 @@ import fh_ac_ai_gym
 from knowledge_base import KnowledgeBase
 from sympy import symbols
 
-def test_knowledge_base(kb):
-    A = symbols('A')
-    B = symbols('B')
-    C = symbols('C')
-
 
 def get_direction(observation):
     """
@@ -94,34 +89,43 @@ def get_safe_field(kb: KnowledgeBase, x, y):
     Returns:
         (x, y) (tuple): Coordinates of the safe field
     """
-    if KnowledgeBase.hasArrow:
-        if y + 1 <= 3:
-            if kb.ask("W{x}{y+1}") is False and kb.ask("P{x}{y+1}") is False and kb.ask("V{x}{y+1}") is False:
+    if y + 1 <= 3:
+        not_wx_yplus1 = kb.ask(f"~W{x}{y+1}")
+        not_px_yplus1 = kb.ask(f"~P{x}{y+1}")
+        not_vx_yplus1 = kb.ask(f"~V{x}{y+1}")
+        if not_wx_yplus1 is True and not_px_yplus1 is True and not_vx_yplus1 is True:
+            return x, y + 1
+        if kb.hasArrow is False:
+            if (not_wx_yplus1 is True or not_px_yplus1 is True) and not_vx_yplus1 is True:
                 return x, y + 1
-        if y - 1 >= 0:
-            if kb.ask("W{x}{y-1}") is False and kb.ask("P{x}{y-1}") is False and kb.ask("V{x}{y-1}") is False:
+    if y - 1 >= 0:
+        not_wx_yminus1 = kb.ask(f"~W{x}{y-1}")
+        not_px_yminus1 = kb.ask(f"~P{x}{y-1}")
+        not_vx_yminus1 = kb.ask(f"~V{x}{y-1}")
+        if not_wx_yminus1 is True and not_px_yminus1 is True and not_vx_yminus1 is True:
+            return x, y - 1
+        if kb.hasArrow is False:
+            if (not_wx_yminus1 is True or not_px_yminus1 is True) and not_vx_yminus1 is True:
                 return x, y - 1
-        if x + 1 <= 3:
-            if kb.ask("W{x+1}{y}") is False and kb.ask("P{x+1}{y}") is False and kb.ask("V{x+1}{y}") is False:
+    if x + 1 <= 3:
+        not_wy_xplus1 = kb.ask(f"~W{x+1}{y}")
+        not_py_xplus1 = kb.ask(f"~P{x+1}{y}")
+        not_vy_xplus1 = kb.ask(f"~V{x+1}{y}")
+        if not_wy_xplus1 is True and not_py_xplus1 is True and not_vy_xplus1 is False:
+            return x + 1, y
+        if kb.hasArrow is False:
+            if (not_wy_xplus1 is True or not_py_xplus1 is True) and not_vy_xplus1 is True:
                 return x + 1, y
-        if x - 1 >= 0:
-            if kb.ask("W{x-1}{y}") is False and kb.ask("P{x-1}{y}") is False and kb.ask("V{x-1}{y}") is False:
+    if x - 1 >= 0:
+        not_wy_xminus1 = kb.ask(f"~W{x-1}{y}")
+        not_py_xminus1 = kb.ask(f"~P{x-1}{y}")
+        not_vy_xminus1 = kb.ask(f"~V{x-1}{y}")
+        if not_wy_xminus1 is True and not_py_xminus1 is True and not_vy_xminus1 is False:
+            return x - 1, y
+        if kb.hasArrow is False:
+            if (not_wy_xminus1 is True or not_py_xminus1 is True) and not_vy_xminus1 is True:
                 return x - 1, y
-        return None
-    else:
-        if y + 1 <= 3:
-            if (kb.ask("W{x}{y+1}") is False or kb.ask("P{x}{y+1}") is False) and kb.ask("V{x}{y+1}") is False:
-                return x, y + 1
-        if y - 1 >= 0:
-            if (kb.ask("W{x}{y-1}") is False or kb.ask("P{x}{y-1}") is False) and kb.ask("V{x}{y-1}") is False:
-                return x, y - 1
-        if x + 1 <= 3:
-            if (kb.ask("W{x+1}{y}") is False or kb.ask("P{x+1}{y}") is False) and kb.ask("V{x+1}{y}") is False:
-                return x + 1, y
-        if x - 1 >= 0:
-            if (kb.ask("W{x-1}{y}") is False or kb.ask("P{x-1}{y}") is False) and kb.ask("V{x-1}{y}") is False:
-                return x - 1, y
-        return None
+    return None, None
 
 
 def get_action(kb: KnowledgeBase, x, y, direction):
@@ -132,12 +136,12 @@ def get_action(kb: KnowledgeBase, x, y, direction):
     if safe_x is not None:
         print("Safe Field Visited: ", kb.ask(f"V{safe_x}{safe_y}"))
     # If there is glitter, pick up the gold
-    if kb.ask("G{x}{y}"):
-        return "5"
+    if kb.ask(f"~G{x}{y}") is False:
+        return 5
     if safe_x is None and KnowledgeBase.hasArrow:
         # Shoot the arrow
         KnowledgeBase.hasArrow = False
-        return "4"
+        return 4
     # If the safe field is in front of the player, go forward
     turn_direction = get_turn_direction(direction, x, y, safe_x, safe_y)
     print("Turn direction:", turn_direction)
@@ -158,19 +162,19 @@ wumpus_env.render()
 
 last_action = None
 
-# done = False
-# while not done:
-#     # Get the action from the knowledge base
-#     action = get_action(knowledge_base, obs['x'], obs['y'], direction)
-#     print("Action:", action)
-#
-#     obs, reward, done, info = wumpus_env.step(action)
-#     wumpus_env.render()
-#
-#     direction = get_direction(obs)
-#
-#     # Tell the knowledge base about the observation
-#     knowledge_base.tell(obs, reward)
-#
-#
-# wumpus_env.close()
+done = False
+while not done:
+    # Get the action from the knowledge base
+    action = get_action(knowledge_base, obs['x'], obs['y'], direction)
+    print("Action:", action)
+
+    obs, reward, done, info = wumpus_env.step(action)
+    wumpus_env.render()
+
+    direction = get_direction(obs)
+
+    # Tell the knowledge base about the observation
+    knowledge_base.tell(obs, reward)
+
+
+wumpus_env.close()
