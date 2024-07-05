@@ -4,9 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99534783-1fa2-42c4-9d15-ed62cef84da5" name="Changes" comment="optimized get_safe_Field changed a bunch of other stuff">
+    <list default="true" id="99534783-1fa2-42c4-9d15-ed62cef84da5" name="Changes" comment="bla">
+      <change afterPath="$PROJECT_DIR$/P4/perceptron.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/knowledge_base.py" beforeDir="false" afterPath="$PROJECT_DIR$/knowledge_base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base.py" beforeDir="false" afterPath="$PROJECT_DIR$/P3/knowledge_base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/task1.py" beforeDir="false" afterPath="$PROJECT_DIR$/P3/task1.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,6 +37,8 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "Python.knowledge_base.executor": "Run",
+    "Python.main.executor": "Run",
+    "Python.perceptron.executor": "Run",
     "Python.task1.executor": "Run",
     "Python.test.executor": "Debug",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -49,6 +53,11 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\nicol\PycharmProjects\AI_P3\P3" />
+    </key>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -73,6 +82,7 @@
       <workItem from="1719848005241" duration="2086000" />
       <workItem from="1719905030213" duration="7120000" />
       <workItem from="1719912269717" duration="5653000" />
+      <workItem from="1720166135437" duration="5935000" />
     </task>
     <task id="LOCAL-00001" summary="idk">
       <option name="closed" value="true" />
@@ -106,7 +116,15 @@
       <option name="project" value="LOCAL" />
       <updated>1719914615836</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="bla">
+      <option name="closed" value="true" />
+      <created>1720166376126</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1720166376126</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -126,7 +144,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="idk" />
     <MESSAGE value="optimized get_safe_Field changed a bunch of other stuff" />
-    <option name="LAST_COMMIT_MESSAGE" value="optimized get_safe_Field changed a bunch of other stuff" />
+    <MESSAGE value="bla" />
+    <option name="LAST_COMMIT_MESSAGE" value="bla" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -137,8 +156,8 @@
           <option name="timeStamp" value="3" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/task1.py</url>
-          <line>81</line>
+          <url>file://$PROJECT_DIR$/P3/task1.py</url>
+          <line>79</line>
           <option name="timeStamp" value="7" />
         </line-breakpoint>
       </breakpoints>
@@ -146,7 +165,9 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/AI_P3$task1.coverage" NAME="task1 Coverage Results" MODIFIED="1719935996516" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/AI_P3$perceptron.coverage" NAME="perceptron Coverage Results" MODIFIED="1720172080907" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/P4" />
     <SUITE FILE_PATH="coverage/AI_P3$test.coverage" NAME="test Coverage Results" MODIFIED="1719909157923" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/.venv" />
     <SUITE FILE_PATH="coverage/AI_P3$knowledge_base.coverage" NAME="knowledge_base Coverage Results" MODIFIED="1719905416299" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/AI_P3$main.coverage" NAME="main Coverage Results" MODIFIED="1720171400223" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/P4" />
   </component>
 </project>

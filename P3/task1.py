@@ -1,7 +1,5 @@
 import gym
-import fh_ac_ai_gym
-from knowledge_base import KnowledgeBase
-from sympy import symbols
+from P3.knowledge_base import KnowledgeBase
 
 
 def get_direction(observation):
