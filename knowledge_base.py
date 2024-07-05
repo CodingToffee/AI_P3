@@ -45,14 +45,14 @@ class KnowledgeBase:
         self.clauses = set()  # Knowledge base
         self.reward = 0
         # Add initial knowledge to knowledge base
-        self.clauses.append(Not(symbols("P00")))
-        self.clauses.append(Not(symbols("W00")))
-        self.clauses.append(Not(symbols("G00")))
+        self.clauses.update([Not(symbols("P00"))])
+        self.clauses.update([Not(symbols("W00"))])
+        self.clauses.update([Not(symbols("G00"))])
 
     def tell_test(self):
         expression = Equivalent(Not(symbols("S00")), And(Not(symbols("W01")), Not(symbols("W10"))))
         expression_cnf = to_cnf(expression)
-        self.clauses = self.clauses + get_clauses(expression_cnf)
+        self.clauses.update(get_clauses(expression_cnf))
         # expression = Equivalent(Not(symbols("B00")), Or(Not(symbols("P01")), Not(symbols("P10"))))
 
     def tell(self, observation, reward: float):
@@ -61,36 +61,36 @@ class KnowledgeBase:
 
         # Add visited field to knowledge base
         V = symbols(f"V{x}{y}")
-        self.clauses.append(V)
+        self.clauses.update([V])
         # On a visited field there is no pit nor wumpus
         expression = Implies(V, And(Not(symbols(f"P{x}{y}")), Not(symbols(f"W{x}{y}"))))
         expression_cnf = to_cnf(expression)
-        self.clauses = self.clauses + get_clauses(expression_cnf)
+        self.clauses.update(get_clauses(expression_cnf))
 
         # Add Scream if wumpus is dead
         if observation['scream']:
             for i in range(4):
                 for j in range(4):
-                        self.clauses.append(Not(symbols(f"W{i}{j}")))
+                    self.clauses.update([Not(symbols(f"W{i}{j}"))])
 
         # Add if glitter is present
         if observation['glitter']:
-            self.clauses.append(symbols(f"G{x}{y}"))
+            self.clauses.update([symbols(f"G{x}{y}")])
 
-        eval = []
+        evaluate = []
         if observation['breeze']:
-            eval.append(('B', 'P', True))
+            evaluate.append(('B', 'P', True))
         else:
-            eval.append(('B', 'P', False))
+            evaluate.append(('B', 'P', False))
         if observation['stench']:
-            eval.append(('S', 'W', True))
+            evaluate.append(('S', 'W', True))
         else:
-            eval.append(('S', 'W', False))
+            evaluate.append(('S', 'W', False))
 
-        for e, f, true in eval:
+        for e, f, true in evaluate:
             beta = []
             if true:
-                self.clauses.append(symbols(f"{e}{x}{y}"))
+                self.clauses.update([symbols(f"{e}{x}{y}")])
                 alpha = symbols(f"{e}{x}{y}")
                 if x - 1 >= 0:
                     beta.append(symbols(f"{f}{x - 1}{y}"))
@@ -103,7 +103,7 @@ class KnowledgeBase:
                 if f == 'W':
                     beta.append(symbols(f"{f}{x}{y}"))
             else:
-                self.clauses.append(Not(symbols(f"{e}{x}{y}")))
+                self.clauses.update([Not(symbols(f"{e}{x}{y}"))])
                 alpha = Not(symbols(f"{e}{x}{y}"))
                 if x - 1 >= 0:
                     beta.append(Not(symbols(f"{f}{x - 1}{y}")))
@@ -120,7 +120,7 @@ class KnowledgeBase:
             expression = Equivalent(alpha, beta)
             # print("Expression:", expression)
             expression_cnf = to_cnf(expression)
-            self.clauses = self.clauses + get_clauses(expression_cnf)
+            self.clauses.update(get_clauses(expression_cnf))
 
     def ask(self, proposition):
         """
@@ -140,9 +140,9 @@ class KnowledgeBase:
         Returns:
             bool: True if the proposition is true, False otherwise
         """
-        clauses = self.clauses + [Not(alpha)]
-        clauses = [set(get_literals(c)) for c in clauses]
-        # print("Clauses:", clauses)
+        clauses = self.clauses.union([Not(alpha)])
+        clauses = [frozenset(get_literals(c)) for c in clauses]
+        print("Clauses:", clauses)
         new = set()
         while True:
             for i in range(len(clauses)):
